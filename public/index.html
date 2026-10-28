@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1f2a44">
+<title>P-Day Quips</title>
+<style>
+:root{
+  --bg:#f6f1e7; --card:#fffdf8; --ink:#1c2233; --muted:#6b6f7c; --line:#e3dccd;
+  --navy:#1f2a44; --accent:#e2683c; --accent-ink:#fff; --good:#2f8a5b; --tag:#141414;
+  --a:#3d6fd8; --b:#d8503d; --shadow:0 2px 0 rgba(0,0,0,.06),0 8px 24px rgba(31,42,68,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;-webkit-tap-highlight-color:transparent}
+body{min-height:100vh;min-height:100dvh}
+.wrap{max-width:520px;margin:0 auto;padding:16px 16px 40px}
+header.bar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--navy);color:#fff;position:sticky;top:0;z-index:5}
+header.bar .logo{font-weight:800;letter-spacing:.02em}
+header.bar .logo span{color:#ffb38f}
+header.bar .meta{font-size:13px;opacity:.85;text-align:right}
+h1{font-size:34px;line-height:1.05;margin:24px 0 6px;letter-spacing:-.02em}
+h1 span{color:var(--accent)}
+h2{font-size:22px;margin:4px 0 12px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;box-shadow:var(--shadow);margin:0 0 14px}
+label.f{display:block;font-size:13px;font-weight:600;color:var(--muted);margin:0 0 6px;text-transform:uppercase;letter-spacing:.06em}
+input[type=text],textarea{width:100%;font:inherit;font-size:18px;padding:13px 14px;border:2px solid var(--line);border-radius:12px;background:#fff;color:var(--ink);outline:none}
+input[type=text]:focus,textarea:focus{border-color:var(--navy)}
+input.code{text-transform:uppercase;letter-spacing:.3em;font-weight:800;text-align:center;font-size:24px}
+textarea{resize:none;min-height:96px}
+button{font:inherit;cursor:pointer;border:0;border-radius:12px;padding:14px 16px;font-weight:700;font-size:17px;width:100%;transition:transform .05s}
+button:active{transform:translateY(1px)}
+button:disabled{opacity:.45;cursor:default}
+.btn{background:var(--accent);color:var(--accent-ink)}
+.btn.navy{background:var(--navy);color:#fff}
+.btn.ghost{background:transparent;color:var(--navy);border:2px solid var(--line)}
+.btn.small{width:auto;padding:8px 12px;font-size:14px}
+.row{display:flex;gap:10px}
+.row>*{flex:1}
+.gap{height:10px}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:13px;margin:16px 0}
+.or:before,.or:after{content:"";flex:1;height:1px;background:var(--line)}
+.err{background:#fde8e1;color:#8a2b12;border-radius:12px;padding:10px 14px;margin:0 0 12px;font-weight:600}
+.link{background:none;color:var(--muted);text-decoration:underline;font-weight:500;font-size:14px;padding:8px}
+
+/* name tags */
+.tags{display:flex;flex-wrap:wrap;gap:8px}
+.tag{background:var(--tag);color:#fff;border-radius:7px;padding:7px 12px 6px;font-weight:700;font-size:15px;position:relative;display:inline-flex;align-items:center;gap:6px;box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.tag small{display:block;font-size:9px;font-weight:600;letter-spacing:.12em;opacity:.7;text-transform:uppercase}
+.tag .inner{display:flex;flex-direction:column;line-height:1.1}
+.tag.off{opacity:.35}
+.tag.done{outline:3px solid var(--good);outline-offset:2px}
+.tag .x{background:#333;color:#fff;border-radius:50%;width:20px;height:20px;padding:0;font-size:12px;line-height:20px}
+.crown{font-size:13px}
+
+.bigcode{font-size:46px;font-weight:900;letter-spacing:.18em;text-align:center;margin:4px 0 0;color:var(--navy)}
+.center{text-align:center}
+.muted{color:var(--muted)}
+.pill{display:inline-block;background:#efe7d6;color:var(--navy);border-radius:999px;padding:4px 10px;font-size:13px;font-weight:700}
+
+/* timer */
+.timer{height:8px;background:#e9e1d1;border-radius:99px;overflow:hidden;margin:6px 0 16px}
+.timer i{display:block;height:100%;background:var(--accent);width:100%;transition:width .25s linear}
+.timer.low i{background:#c0392b}
+.clock{font-variant-numeric:tabular-nums;font-weight:800}
+
+/* prompt + answers */
+.prompt{font-size:24px;font-weight:800;line-height:1.2;letter-spacing:-.01em;margin:0 0 16px}
+.ans{display:block;width:100%;text-align:left;background:#fff;border:3px solid var(--line);border-radius:16px;padding:18px 16px;font-size:20px;font-weight:700;color:var(--ink);margin:0 0 12px;min-height:70px}
+.ans.a{border-color:var(--a)} .ans.b{border-color:var(--b)}
+.ans.picked{background:var(--navy);color:#fff;border-color:var(--navy)}
+.ans .who{display:block;font-size:13px;font-weight:700;margin-top:8px;opacity:.75}
+.ans.blank{color:var(--muted);font-style:italic;font-weight:500}
+.vs{text-align:center;font-weight:900;color:var(--muted);margin:-4px 0 8px;font-size:14px;letter-spacing:.2em}
+.res{display:flex;justify-content:space-between;align-items:baseline;margin-top:10px;gap:8px}
+.res .pts{font-size:26px;font-weight:900;color:var(--good)}
+.res .votes{font-size:13px;color:var(--muted)}
+.banner{background:var(--accent);color:#fff;border-radius:12px;padding:10px 14px;font-weight:900;text-align:center;letter-spacing:.04em;margin:0 0 12px}
+.banner.navy{background:var(--navy)}
+.hostbar{border-top:1px dashed var(--line);margin-top:16px;padding-top:12px}
+.hostbar .lbl{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin:0 0 8px}
+
+/* scoreboard */
+.sb{list-style:none;margin:0;padding:0}
+.sb li{display:flex;align-items:center;gap:12px;padding:10px 4px;border-bottom:1px solid var(--line)}
+.sb li:last-child{border-bottom:0}
+.sb .rk{width:28px;font-weight:900;color:var(--muted);text-align:center}
+.sb .nm{flex:1;font-weight:700}
+.sb .sc{font-weight:900;font-variant-numeric:tabular-nums}
+.sb li.first .rk{color:var(--accent)}
+.winner{font-size:40px;font-weight:900;text-align:center;margin:8px 0}
+
+/* settings */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{width:auto;padding:8px 12px;font-size:14px;border-radius:999px;background:#efe7d6;color:var(--navy);font-weight:700}
+.chip.on{background:var(--navy);color:#fff}
+.seg{display:flex;background:#efe7d6;border-radius:12px;padding:3px}
+.seg button{background:none;color:var(--navy);font-size:14px;padding:8px 0;border-radius:9px}
+.seg button.on{background:var(--navy);color:#fff}
+.counter{font-size:12px;color:var(--muted);text-align:right;margin-top:4px}
+.stack>*+*{margin-top:12px}
+
+/* TV display */
+body.tv .wrap{max-width:1100px}
+body.tv .prompt{font-size:48px}
+body.tv .ans{font-size:34px;min-height:120px}
+body.tv .bigcode{font-size:96px}
+body.tv .tag{font-size:22px;padding:10px 16px}
+body.tv .sb li{font-size:26px}
+body.tv .duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+body.tv h2{font-size:34px}
+.joinhint{font-size:20px}
+@media (prefers-reduced-motion:no-preference){.pop{animation:pop .35s ease-out}@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}}
+</style>
+</head>
+<body>
+<header class="bar"><div class="logo">P-Day <span>Quips</span></div><div class="meta" id="meta"></div></header>
+<main class="wrap" id="app"></main>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+(() => {
+const $app = document.getElementById("app");
+const $meta = document.getElementById("meta");
+const socket = io({ transports: ["websocket", "polling"] });
+const store = {
+  get(k){ try { return JSON.parse(localStorage.getItem("pdq_"+k)); } catch { return null; } },
+  set(k,v){ try { localStorage.setItem("pdq_"+k, JSON.stringify(v)); } catch {} },
+  del(k){ try { localStorage.removeItem("pdq_"+k); } catch {} },
+};
+const params = new URLSearchParams(location.search);
+let S = null;            // latest server state
+let offset = 0;          // server clock - client clock
+let error = "";
+let mode = params.has("tv") ? "tv" : "player";
+let session = store.get("session"); // {code, playerId, name}
+let draft = {};          // answers being typed, keyed by prompt index
+let homeView = mode === "tv" ? "tv" : "home";
+if (mode === "tv") document.body.classList.add("tv");
+
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const me = () => S && S.players.find(p => p.id === S.you);
+const nm = (id) => S.players.find(p => p.id === id)?.name || "";
+
+// ---------- socket ----------
+socket.on("connect", () => {
+  if (mode === "tv" && store.get("tvcode")) socket.emit("join", { code: store.get("tvcode"), display: true });
+  else if (session?.code && session?.playerId) socket.emit("join", { code: session.code, playerId: session.playerId, name: session.name });
+});
+socket.on("joined", (j) => {
+  error = "";
+  if (j.display) { store.set("tvcode", j.code); return; }
+  session = { ...(session||{}), code: j.code, playerId: j.playerId };
+  store.set("session", session);
+});
+socket.on("state", (st) => {
+  offset = st.now - Date.now();
+  const prevPhase = S?.phase, prevRound = S?.round;
+  S = st;
+  if (prevPhase !== S.phase || prevRound !== S.round) draft = draft; // keep drafts across rerenders
+  render();
+});
+socket.on("err", (m) => {
+  error = m;
+  if (/No game/.test(m)) { store.del("session"); store.del("tvcode"); session = session ? { name: session.name } : null; S = null; }
+  render();
+});
+socket.on("kicked", () => { store.del("session"); S = null; error = "The host removed you from the game."; render(); });
+
+// ---------- timer ----------
+setInterval(() => {
+  const t = document.querySelector(".timer i"), c = document.querySelector(".clock");
+  if (!S || !S.deadline || !t) return;
+  const total = Number(t.dataset.total) || 1;
+  const left = Math.max(0, S.deadline - (Date.now() + offset));
+  t.style.width = (100 * left / total) + "%";
+  t.parentElement.classList.toggle("low", left < 10000);
+  if (c) c.textContent = Math.ceil(left / 1000) + "s";
+}, 250);
+function timerBar(totalMs) {
+  if (!S.deadline) return "";
+  const left = Math.max(0, S.deadline - (Date.now() + offset));
+  return `<div class="timer"><i data-total="${totalMs}" style="width:${100*left/totalMs}%"></i></div>`;
+}
+
+// ---------- actions ----------
+const act = {
+  create(){ const name = val("name"); saveName(name); socket.emit("create", { name, playerId: session?.playerId }); },
+  join(){ const name = val("name"); saveName(name); socket.emit("join", { code: val("code"), name }); },
+  tvjoin(){ socket.emit("join", { code: val("code"), display: true }); },
+  start(){ socket.emit("start"); },
+  advance(){ socket.emit("advance", { phase: S.phase, round: S.round, mIndex: S.matchup ? S.matchup.index : undefined }); },
+  leave(){ socket.emit("leave"); store.del("session"); session = { name: session?.name }; S = null; draft = {}; render(); },
+  tvleave(){ store.del("tvcode"); location.reload(); },
+  vote(c){ socket.emit("vote", c); },
+  hide(t){ socket.emit("hide", t); },
+  kick(id){ socket.emit("kick", id); },
+  submit(mi){ const text = val("ans"); if (!text.trim()) return flash("Type something first! (Or skip.)"); socket.emit("answer", { mi: Number(mi), text }); delete draft[mi]; },
+  skip(mi){ socket.emit("answer", { mi: Number(mi), text: "" }); delete draft[mi]; },
+  setting(k, v){ const s = { ...S.settings }; s[k] = v; socket.emit("settings", { [k]: v }); },
+  cat(k){ let c = S.settings.categories.slice(); c = c.includes(k) ? c.filter(x => x !== k) : [...c, k]; if (!c.length) return; socket.emit("settings", { categories: c }); },
+  tv(){ location.href = "/?tv"; },
+  home(){ homeView = "home"; render(); },
+};
+function val(id){ return document.getElementById(id)?.value || ""; }
+function saveName(n){ session = { ...(session||{}), name: n }; store.set("session", session); }
+function flash(m){ error = m; render(); setTimeout(() => { if (error === m) { error = ""; render(); } }, 2500); }
+
+$app.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-act]"); if (!b || b.disabled) return;
+  const [fn, ...args] = b.dataset.act.split(":");
+  if (fn === "setting") return act.setting(args[0], Number(args[1]));
+  act[fn]?.(...args);
+});
+$app.addEventListener("input", (e) => {
+  if (e.target.id === "ans") { draft[e.target.dataset.mi] = e.target.value; const c = document.getElementById("cnt"); if (c) c.textContent = `${e.target.value.length}/80`; }
+  if (e.target.id === "code") e.target.value = e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4);
+});
+$app.addEventListener("change", (e) => { if (e.target.id === "custom") socket.emit("settings", { custom: e.target.value }); });
+$app.addEventListener("keydown", (e) => {
+  if (e.key !== "Enter") return;
+  if (e.target.id === "ans") { e.preventDefault(); document.querySelector('[data-act^="submit"]')?.click(); }
+  if (e.target.id === "code" || e.target.id === "name") { e.preventDefault(); document.querySelector('[data-act="join"],[data-act="tvjoin"]')?.click(); }
+});
+
+// ---------- render ----------
+function render(){
+  // preserve focus/typing across re-renders
+  const active = document.activeElement, aid = active?.id, sel = active?.selectionStart;
+  const keepVals = {};
+  for (const id of ["name","code","custom"]) { const el = document.getElementById(id); if (el) keepVals[id] = el.value; }
+
+  $app.innerHTML = (error ? `<div class="err">${esc(error)}</div>` : "") + view();
+  $meta.innerHTML = S ? `Room <b>${esc(S.code)}</b>${S.round ? ` · ${S.round === 3 ? "Final" : "Round " + S.round}` : ""}` : "";
+
+  for (const [id, v] of Object.entries(keepVals)) { const el = document.getElementById(id); if (el && !(id === "custom" && aid !== "custom")) el.value = v; }
+  if (aid) { const el = document.getElementById(aid); if (el) { el.focus(); try { el.setSelectionRange(sel, sel); } catch {} } }
+}
+
+function view(){
+  if (!S) return mode === "tv" ? (homeView === "tv" ? tvJoinView() : tvJoinView()) : (homeView === "tvjoin" ? tvJoinView() : homeViewHtml());
+  switch (S.phase) {
+    case "lobby": return lobby();
+    case "answer": return answering();
+    case "vote": return voting();
+    case "reveal": return reveal();
+    case "scores": return scores();
+    case "final_answer": return finalAnswer();
+    case "final_vote": return finalVote();
+    case "final_reveal": return finalReveal();
+    case "end": return ending();
+  }
+  return "";
+}
+
+function homeViewHtml(){
+  return `
+  <h1>Quick wits.<br><span>Clean laughs.</span></h1>
+  <p class="sub">A head-to-head answer game for P-day. Everyone plays on their own phone.</p>
+  <div class="card stack">
+    <div><label class="f" for="name">Your name</label><input type="text" id="name" maxlength="16" autocomplete="off" placeholder="Elder Smith" value="${esc(session?.name||"")}"></div>
+    <div><label class="f" for="code">Room code</label><input type="text" id="code" class="code" maxlength="4" autocomplete="off" autocapitalize="characters" placeholder="ABCD"></div>
+    <button class="btn" data-act="join">Join game</button>
+  </div>
+  <div class="or">or</div>
+  <button class="btn navy" data-act="create">Host a new game</button>
+  <p class="center"><button class="link" data-act="tv">Use this screen as the TV display</button></p>`;
+}
+function tvJoinView(){
+  return `
+  <h1>TV <span>display</span></h1>
+  <p class="sub">Optional: show prompts and results on a big screen. Players still answer on their phones.</p>
+  <div class="card stack">
+    <div><label class="f" for="code">Room code</label><input type="text" id="code" class="code" maxlength="4" autocomplete="off" placeholder="ABCD"></div>
+    <button class="btn navy" data-act="tvjoin">Show this game</button>
+  </div>
+  ${mode === "tv" ? "" : `<p class="center"><button class="link" data-act="home">Back</button></p>`}`;
+}
+
+function tagHtml(p, opts = {}){
+  const host = p.id === S.hostId ? `<span class="crown" title="Host">★</span>` : "";
+  const kick = opts.kick && p.id !== S.you ? `<button class="x" data-act="kick:${p.id}" aria-label="Remove ${esc(p.name)}">✕</button>` : "";
+  const score = opts.score ? ` · ${p.score}` : "";
+  return `<span class="tag ${p.connected ? "" : "off"} ${opts.done && p.done ? "done" : ""}"><span class="inner"><small>Hello, I'm</small>${esc(p.name)}${score}</span>${host}${kick}</span>`;
+}
+
+function hostControls(label, inner){
+  if (!S.isHost) return "";
+  return `<div class="hostbar"><div class="lbl">Host · ${label}</div>${inner}</div>`;
+}
+
+function lobby(){
+  const players = S.players.filter(p => p.connected);
+  const enough = players.length >= S.minPlayers;
+  const st = S.settings;
+  const tv = mode === "tv";
+  const joinUrl = location.origin.replace(/^https?:\/\//, "");
+  let settings = "";
+  if (S.isHost) {
+    settings = `
+    <div class="card stack">
+      <h2>Game settings</h2>
+      <div><label class="f">Time to answer</label><div class="seg">${[45,60,90,120].map(t => `<button class="${st.answerTime===t?"on":""}" data-act="setting:answerTime:${t}">${t}s</button>`).join("")}</div></div>
+      <div><label class="f">Time to vote</label><div class="seg">${[15,20,30].map(t => `<button class="${st.voteTime===t?"on":""}" data-act="setting:voteTime:${t}">${t}s</button>`).join("")}</div></div>
+      <div><label class="f">Prompt categories</label><div class="chips">${S.categories.map(c => `<button class="chip ${st.categories.includes(c.key)?"on":""}" data-act="cat:${c.key}">${esc(c.label)} <span style="opacity:.6">${c.count}</span></button>`).join("")}</div></div>
+      <div><label class="f" for="custom">Your own prompts (one per line)</label><textarea id="custom" placeholder="What Elder Jensen's bike is really named&#10;The real reason our district loves Taco Tuesday">${esc(st.custom.join("\n"))}</textarea>
+      <div class="counter">${st.custom.length} custom prompt${st.custom.length===1?"":"s"} added</div></div>
+    </div>`;
+  }
+  return `
+  <div class="card center pop">
+    <div class="muted">${tv ? `Go to <b>${esc(joinUrl)}</b> and enter` : "Room code"}</div>
+    <div class="bigcode">${esc(S.code)}</div>
+    ${tv ? "" : `<div class="muted" style="font-size:13px">Friends join at <b>${esc(joinUrl)}</b></div>`}
+  </div>
+  <div class="card">
+    <h2>Who's here <span class="pill">${players.length}</span></h2>
+    <div class="tags">${players.map(p => tagHtml(p, { kick: S.isHost })).join("") || `<span class="muted">Waiting for players…</span>`}</div>
+  </div>
+  ${settings}
+  ${S.isHost
+    ? `<button class="btn" data-act="start" ${enough ? "" : "disabled"}>${enough ? `Start game with ${players.length}` : `Need ${S.minPlayers - players.length} more player${S.minPlayers - players.length === 1 ? "" : "s"}`}</button>`
+    : tv ? `<p class="center muted joinhint">Waiting for the host to start…</p>`
+    : `<p class="center muted">Waiting for <b>${esc(nm(S.hostId))}</b> to start the game…</p>`}
+  ${tv ? `<p class="center"><button class="link" data-act="tvleave">Stop displaying</button></p>` : `<p class="center"><button class="link" data-act="leave">Leave game</button></p>`}
+  ${howTo()}`;
+}
+function howTo(){
+  return `<div class="card"><h2>How to play</h2>
+  <ol style="margin:0;padding-left:20px" class="muted">
+    <li>You get 2 prompts. Write the funniest answer you can.</li>
+    <li>Your answer goes head-to-head against one other person's answer, anonymously.</li>
+    <li>Everyone else votes. Points go by share of votes. Win every vote for a <b>Clean Sweep</b> bonus.</li>
+    <li>Round 2 is worth double. In the Final, everyone answers the same prompt.</li>
+    <li>Keep it clean: tease the mission life, not sacred things.</li>
+  </ol></div>`;
+}
+
+function answering(){
+  const total = S.settings.answerTime * 1000;
+  const waiting = S.players.filter(p => p.inGame && !p.done);
+  if (mode === "tv" || !S.myPrompts) {
+    return `<div class="center"><span class="pill">Round ${S.round} · ${S.mult}× points</span></div>
+      <h2 class="center" style="margin-top:12px">Answer the prompts on your phone!</h2>${timerBar(total)}
+      <p class="center clock" style="font-size:28px"></p>
+      <div class="card"><div class="tags" style="justify-content:center">${S.players.filter(p=>p.inGame).map(p => tagHtml(p, { done: true })).join("")}</div></div>`;
+  }
+  const next = S.myPrompts.find(p => !p.submitted);
+  const doneCount = S.myPrompts.filter(p => p.submitted).length;
+  if (!next) {
+    return `<div class="center"><span class="pill">Round ${S.round}</span></div>${timerBar(total)}
+      <div class="card center pop"><h2>All done! 🎉</h2><p class="muted">Waiting on ${waiting.length ? waiting.map(p => `<b>${esc(p.name)}</b>`).join(", ") : "everyone"}…</p></div>
+      ${hostControls("Skip ahead", `<button class="btn ghost" data-act="advance">End answering now</button>`)}`;
+  }
+  return `
+  <div class="row" style="align-items:center"><span class="pill" style="flex:0 0 auto">Prompt ${doneCount + 1} of ${S.myPrompts.length}</span><span class="clock" style="text-align:right"></span></div>
+  ${timerBar(total)}
+  <div class="card pop">
+    <p class="prompt">${esc(next.prompt)}</p>
+    <textarea id="ans" data-mi="${next.mi}" maxlength="80" placeholder="Your funniest answer…" autocomplete="off" autocapitalize="sentences">${esc(draft[next.mi] || "")}</textarea>
+    <div class="counter" id="cnt">${(draft[next.mi]||"").length}/80</div>
+    <div class="gap"></div>
+    <button class="btn" data-act="submit:${next.mi}">Submit answer</button>
+    <p class="center" style="margin:6px 0 0"><button class="link" data-act="skip:${next.mi}">I've got nothing (skip)</button></p>
+  </div>
+  ${hostControls("Skip ahead", `<button class="btn ghost" data-act="advance">End answering for everyone</button>`)}`;
+}
+
+function answerBox(side, text, extra = ""){
+  const blank = !text;
+  return `<div class="ans ${side} ${blank ? "blank" : ""}">${blank ? "(no answer)" : esc(text)}${extra}</div>`;
+}
+
+function voting(){
+  const m = S.matchup, total = S.settings.voteTime * 1000;
+  const head = `<div class="row" style="align-items:center"><span class="pill" style="flex:0 0 auto">Matchup ${m.index + 1} of ${m.total}</span><span class="clock" style="text-align:right"></span></div>${timerBar(total)}`;
+  const prompt = `<p class="prompt pop">${esc(m.prompt)}</p>`;
+  const tv = mode === "tv";
+  let body;
+  if (tv) {
+    body = `<div class="duo">${answerBox("a", m.a)}${answerBox("b", m.b)}</div><p class="center muted joinhint">Vote on your phone! ${m.votesIn}/${m.votersNeeded} votes in</p>`;
+  } else if (m.mine) {
+    body = `${answerBox("a", m.a, m.mine === "a" ? `<span class="who">← yours</span>` : "")}<div class="vs">VS</div>${answerBox("b", m.b, m.mine === "b" ? `<span class="who">← yours</span>` : "")}
+      <p class="center muted">One of these is yours. Sit back and look innocent. 😇<br>${m.votesIn}/${m.votersNeeded} votes in</p>`;
+  } else {
+    const btn = (s, t) => `<button class="ans ${s} ${m.myVote === s ? "picked" : ""} ${!t ? "blank" : ""}" data-act="vote:${s}" ${m.myVote ? "disabled" : ""}>${t ? esc(t) : "(no answer)"}</button>`;
+    body = `${btn("a", m.a)}<div class="vs">VS</div>${btn("b", m.b)}
+      <p class="center muted">${m.myVote ? "Vote locked in. " : "Tap the funnier one. "}${m.votesIn}/${m.votersNeeded} votes in</p>`;
+  }
+  return head + `<div class="card">${prompt}${body}</div>` + hostControls("Moderate", `<div class="row"><button class="btn ghost small" data-act="hide:a">Hide top</button><button class="btn ghost small" data-act="hide:b">Hide bottom</button><button class="btn ghost small" data-act="advance">End vote</button></div>`);
+}
+
+function reveal(){
+  const m = S.matchup, r = m.result;
+  let banner = "";
+  if (r.jinx) banner = `<div class="banner navy pop">JINX! Same answer. Nobody scores.</div>`;
+  else if (r.bothBlank) banner = `<div class="banner navy pop">Two blanks. Moving on…</div>`;
+  else if (r.sweep) banner = `<div class="banner pop">CLEAN SWEEP! ${esc(r.sweep === "a" ? m.nameA : m.nameB)} got every vote</div>`;
+  const side = (s) => {
+    const name = s === "a" ? m.nameA : m.nameB, text = m[s], pts = r[s], votes = s === "a" ? r.votesA : r.votesB, who = s === "a" ? m.votersA : m.votersB;
+    return `<div class="ans ${s} ${!text ? "blank" : ""}">${text ? esc(text) : "(no answer)"}
+      <div class="res"><span class="tag"><span class="inner"><small>Hello, I'm</small>${esc(name)}</span></span><span class="pts">+${pts}</span></div>
+      ${r.jinx || r.bothBlank ? "" : `<div class="res"><span class="votes">${votes} vote${votes===1?"":"s"}${who && who.length ? ": " + who.map(esc).join(", ") : ""}</span></div>`}</div>`;
+  };
+  const tv = mode === "tv";
+  return `<div class="center"><span class="pill">Matchup ${m.index + 1} of ${m.total}</span></div><div class="gap"></div>
+    ${banner}<div class="card"><p class="prompt">${esc(m.prompt)}</p>${tv ? `<div class="duo">${side("a")}${side("b")}</div>` : side("a") + side("b")}</div>
+    ${hostControls("Next", `<button class="btn navy" data-act="advance">${m.index + 1 < m.total ? "Next matchup" : "See scores"}</button><div class="gap"></div><button class="btn ghost small" data-act="hide:a">Hide top answer</button> <button class="btn ghost small" data-act="hide:b">Hide bottom answer</button>`)}`;
+}
+
+function board(){
+  const ps = S.players.filter(p => p.inGame).sort((a, b) => b.score - a.score);
+  return `<ol class="sb">${ps.map((p, i) => `<li class="${i===0?"first":""}"><span class="rk">${i+1}</span><span class="nm">${esc(p.name)}${p.id===S.you?" (you)":""}</span><span class="sc">${p.score.toLocaleString()}</span></li>`).join("")}</ol>`;
+}
+function scores(){
+  const nextLabel = S.round === 1 ? "Start Round 2 (double points)" : "Start the Final Round";
+  return `<h2 class="center">Scores after Round ${S.round}</h2><div class="card pop">${board()}</div>
+    ${S.isHost ? `<button class="btn" data-act="advance">${nextLabel}</button>` : `<p class="center muted">Waiting for the host to start ${S.round === 1 ? "Round 2" : "the Final"}…</p>`}`;
+}
+
+function finalAnswer(){
+  const total = S.settings.answerTime * 1000, f = S.final;
+  const waiting = S.players.filter(p => p.inGame && !p.done);
+  const head = `<div class="center"><span class="pill">Final Round · everyone answers</span></div>${timerBar(total)}`;
+  if (mode === "tv" || !f.inGame) return head + `<div class="card"><p class="prompt center">${esc(f.prompt)}</p><p class="center muted joinhint">Answer on your phone!</p><div class="tags" style="justify-content:center">${S.players.filter(p=>p.inGame).map(p => tagHtml(p, { done: true })).join("")}</div></div>`;
+  if (f.submitted) return head + `<div class="card center"><h2>Locked in! 🔒</h2><p class="muted">Waiting on ${waiting.map(p => `<b>${esc(p.name)}</b>`).join(", ") || "everyone"}…</p></div>${hostControls("Skip ahead", `<button class="btn ghost" data-act="advance">End answering now</button>`)}`;
+  return head + `<div class="card pop"><p class="prompt">${esc(f.prompt)}</p>
+    <textarea id="ans" data-mi="final" maxlength="80" placeholder="Make it count…">${esc(draft.final || "")}</textarea>
+    <div class="counter" id="cnt">${(draft.final||"").length}/80</div><div class="gap"></div>
+    <button class="btn" data-act="submit:final">Submit final answer</button></div>
+    ${hostControls("Skip ahead", `<button class="btn ghost" data-act="advance">End answering for everyone</button>`)}`;
+}
+
+function finalVote(){
+  const f = S.final, total = S.settings.voteTime * 1000 + 10000;
+  const tv = mode === "tv";
+  const items = f.answers.map(a => {
+    if (tv) return `<div class="ans">${esc(a.text)}</div>`;
+    if (a.mine) return `<div class="ans blank">${esc(a.text)} <span class="who">← yours</span></div>`;
+    return `<button class="ans ${f.myVote === a.id ? "picked" : ""}" data-act="vote:${a.id}" ${f.myVote ? "disabled" : ""}>${esc(a.text)}</button>`;
+  }).join("");
+  return `<div class="row" style="align-items:center"><span class="pill" style="flex:0 0 auto">Final vote</span><span class="clock" style="text-align:right"></span></div>${timerBar(total)}
+    <div class="card"><p class="prompt">${esc(f.prompt)}</p><p class="muted" style="margin-top:-8px">${f.myVote ? "Vote locked in." : tv ? "Vote on your phone!" : "Pick your favorite. Each vote is worth 500."} ${f.votesIn} in</p>${items}</div>
+    ${hostControls("Moderate", `${f.answers.map(a => `<button class="btn ghost small" data-act="hide:${a.id}">Hide “${esc(a.text.slice(0,18))}…”</button>`).join(" ")}<div class="gap"></div><button class="btn ghost" data-act="advance">End vote</button>`)}`;
+}
+
+function finalReveal(){
+  const f = S.final;
+  return `<div class="center"><span class="pill">Final results</span></div><div class="gap"></div>
+    <div class="card"><p class="prompt">${esc(f.prompt)}</p>
+    ${f.answers.map(a => `<div class="ans pop">${esc(a.text)}<div class="res"><span class="tag"><span class="inner"><small>Hello, I'm</small>${esc(a.name)}</span></span><span class="pts">+${a.points}</span></div><div class="res"><span class="votes">${a.votes} vote${a.votes===1?"":"s"}</span></div></div>`).join("") || `<p class="muted">Not enough answers for a vote.</p>`}</div>
+    ${S.isHost ? `<button class="btn" data-act="advance">Reveal the winner</button>` : ""}`;
+}
+
+function ending(){
+  const ps = S.players.filter(p => p.inGame).sort((a, b) => b.score - a.score);
+  const top = ps[0]?.score ?? 0;
+  const winners = ps.filter(p => p.score === top);
+  return `<div class="card center pop"><div class="muted">${winners.length > 1 ? "It's a tie!" : "Today's champion"}</div>
+    <div class="winner">🏆 ${winners.map(w => esc(w.name)).join(" & ")}</div><div class="muted">${top.toLocaleString()} points</div></div>
+    <div class="card">${board()}</div>
+    ${S.isHost ? `<button class="btn" data-act="advance">Play again (same group)</button>` : `<p class="center muted">The host can start a new game.</p>`}
+    ${mode === "tv" ? "" : `<p class="center"><button class="link" data-act="leave">Leave game</button></p>`}`;
+}
+
+render();
+})();
+</script>
+</body>
+</html>
