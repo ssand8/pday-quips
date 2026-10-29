@@ -111,13 +111,22 @@ body.tv .sb li{font-size:26px}
 body.tv .duo{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 body.tv h2{font-size:34px}
 .joinhint{font-size:20px}
+.snd{display:flex;gap:6px;margin-left:10px}
+.snd button{width:auto;padding:4px 8px;font-size:15px;background:rgba(255,255,255,.12);color:#fff;border-radius:8px;font-weight:600}
+.snd button.off{opacity:.45;text-decoration:line-through}
+header.bar .right{display:flex;align-items:center}
+.unlock{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);width:auto;background:var(--navy);color:#fff;box-shadow:var(--shadow);z-index:9;padding:12px 18px;border-radius:999px;font-size:15px}
+.late{opacity:0;animation:fadein .35s ease-out 1.1s forwards}
+@keyframes fadein{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion:no-preference){.pop{animation:pop .35s ease-out}@keyframes pop{from{transform:scale(.96);opacity:0}to{transform:none;opacity:1}}}
 </style>
 </head>
 <body>
-<header class="bar"><div class="logo">P-Day <span>Quips</span></div><div class="meta" id="meta"></div></header>
+<header class="bar"><div class="logo">P-Day <span>Quips</span></div><div class="right"><div class="meta" id="meta"></div><div class="snd" id="snd"></div></div></header>
+<button class="unlock" id="unlock" hidden>🔊 Tap to turn on sound</button>
 <main class="wrap" id="app"></main>
 <script src="/socket.io/socket.io.js"></script>
+<script src="/audio.js"></script>
 <script>
 (() => {
 const $app = document.getElementById("app");
@@ -156,9 +165,10 @@ socket.on("joined", (j) => {
 socket.on("state", (st) => {
   offset = st.now - Date.now();
   const prevPhase = S?.phase, prevRound = S?.round;
+  const prev = S;
   S = st;
-  if (prevPhase !== S.phase || prevRound !== S.round) draft = draft; // keep drafts across rerenders
   render();
+  sounds(prev, S);
 });
 socket.on("err", (m) => {
   error = m;
@@ -166,6 +176,60 @@ socket.on("err", (m) => {
   render();
 });
 socket.on("kicked", () => { store.del("session"); S = null; error = "The host removed you from the game."; render(); });
+
+// ---------- sound ----------
+const A = window.PDQAudio;
+const isSpeaker = () => mode === "tv" || !!(S && S.isHost && !S.hasDisplay);
+const MUSIC = { lobby: "lobby", answer: "answer", vote: "vote", reveal: "vote", scores: "scores", final_answer: "final", final_vote: "final", final_reveal: "final", end: "end" };
+function sounds(prev, cur) {
+  const spk = isSpeaker();
+  if (spk) A.playMusic(MUSIC[cur.phase]); else A.stopMusic();
+  renderSound();
+  if (!prev || prev.code !== cur.code) return;
+  const ph = cur.phase;
+  if (spk && ph === "lobby") {
+    const n = (x) => x.players.filter(p => p.connected).length;
+    if (n(cur) > n(prev)) A.sfx("join");
+  }
+  const changed = ph !== prev.phase || cur.round !== prev.round || cur.matchup?.index !== prev.matchup?.index;
+  if (!changed) return;
+  if (spk) {
+    if (ph === "answer" || ph === "final_answer") A.sfx("round");
+    if (ph === "vote" || ph === "final_vote") A.sfx("whoosh");
+    if (ph === "reveal") {
+      const r = cur.matchup.result; A.duck(2.6);
+      if (r.jinx) A.sfx("jinx");
+      else if (r.bothBlank) A.sfx("timeup");
+      else { A.sfx("drumroll"); A.sfx(r.sweep ? "sweep" : "reveal", 1.1); }
+    }
+    if (ph === "scores") A.sfx("scores");
+    if (ph === "final_reveal") { A.duck(3); A.sfx("drumroll"); A.sfx("reveal", 1.1); }
+    if (ph === "end") { A.duck(4); A.sfx("winner"); }
+  } else {
+    // personal sounds on everyone else's phone
+    if (ph === "reveal" && cur.matchup.mine && cur.matchup.result[cur.matchup.mine] > 0) A.sfx("points", 1.2);
+    if (ph === "final_reveal" && cur.final.answers.some(a => a.mine && a.points > 0)) A.sfx("points", 1.2);
+    if (ph === "end") A.sfx("scores");
+  }
+}
+const $snd = document.getElementById("snd"), $unlock = document.getElementById("unlock");
+function renderSound() {
+  const spk = isSpeaker();
+  $snd.innerHTML = (spk ? `<button data-snd="music" class="${A.prefs.music ? "" : "off"}" aria-label="Music on/off" title="Music">♪</button>` : "")
+    + `<button data-snd="sfx" class="${A.prefs.sfx ? "" : "off"}" aria-label="Sound effects on/off" title="Sound effects">🔊</button>`;
+  $unlock.hidden = !(spk && !A.ready() && (A.prefs.music || A.prefs.sfx));
+}
+$snd.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-snd]"); if (!b) return;
+  const k = b.dataset.snd; A.unlock(); A.setPref(k, !A.prefs[k]); renderSound();
+  if (k === "sfx" && A.prefs.sfx) A.sfx("tap");
+});
+// browsers only allow audio after a tap: unlock on the first one
+document.addEventListener("pointerdown", () => {
+  if (!A.ready()) { A.unlock(); setTimeout(() => { if (S && isSpeaker()) A.playMusic(MUSIC[S.phase]); renderSound(); }, 60); }
+}, true);
+$unlock.addEventListener("click", () => { A.unlock(); setTimeout(renderSound, 60); });
+let lastTick = null;
 
 // ---------- timer ----------
 setInterval(() => {
@@ -176,6 +240,10 @@ setInterval(() => {
   t.style.width = (100 * left / total) + "%";
   t.parentElement.classList.toggle("low", left < 10000);
   if (c) c.textContent = Math.ceil(left / 1000) + "s";
+  if (isSpeaker() && /answer|vote/.test(S.phase)) {
+    const sec = Math.ceil(left / 1000), key = S.deadline + ":" + sec;
+    if (sec <= 5 && key !== lastTick) { lastTick = key; A.sfx(sec === 0 ? "timeup" : "tick"); }
+  }
 }, 250);
 function timerBar(totalMs) {
   if (!S.deadline) return "";
@@ -192,10 +260,10 @@ const act = {
   advance(){ socket.emit("advance", { phase: S.phase, round: S.round, mIndex: S.matchup ? S.matchup.index : undefined }); },
   leave(){ socket.emit("leave"); store.del("session"); session = { name: session?.name }; S = null; draft = {}; render(); },
   tvleave(){ store.del("tvcode"); location.reload(); },
-  vote(c){ socket.emit("vote", c); },
+  vote(c){ A.sfx("vote"); socket.emit("vote", c); },
   hide(t){ socket.emit("hide", t); },
   kick(id){ socket.emit("kick", id); },
-  submit(mi){ const text = val("ans"); if (!text.trim()) return flash("Type something first! (Or skip.)"); socket.emit("answer", { mi: Number(mi), text }); delete draft[mi]; },
+  submit(mi){ const text = val("ans"); if (!text.trim()) return flash("Type something first! (Or skip.)"); A.sfx("submit"); socket.emit("answer", { mi: Number(mi), text }); delete draft[mi]; },
   skip(mi){ socket.emit("answer", { mi: Number(mi), text: "" }); delete draft[mi]; },
   setting(k, v){ const s = { ...S.settings }; s[k] = v; socket.emit("settings", { [k]: v }); },
   cat(k){ let c = S.settings.categories.slice(); c = c.includes(k) ? c.filter(x => x !== k) : [...c, k]; if (!c.length) return; socket.emit("settings", { categories: c }); },
@@ -317,6 +385,7 @@ function lobby(){
     <h2>Who's here <span class="pill">${players.length}</span></h2>
     <div class="tags">${players.map(p => tagHtml(p, { kick: S.isHost })).join("") || `<span class="muted">Waiting for players…</span>`}</div>
   </div>
+  ${S.isHost ? `<p class="muted center" style="font-size:13px;margin:-4px 0 14px">🎵 Music plays from ${S.hasDisplay ? "the TV display" : "this phone. Connect a TV display to move it there"}. No sound on iPhone? Turn off silent mode.</p>` : ""}
   ${settings}
   ${S.isHost
     ? `<button class="btn" data-act="start" ${enough ? "" : "disabled"}>${enough ? `Start game with ${players.length}` : `Need ${S.minPlayers - players.length} more player${S.minPlayers - players.length === 1 ? "" : "s"}`}</button>`
@@ -395,12 +464,12 @@ function reveal(){
   let banner = "";
   if (r.jinx) banner = `<div class="banner navy pop">JINX! Same answer. Nobody scores.</div>`;
   else if (r.bothBlank) banner = `<div class="banner navy pop">Two blanks. Moving on…</div>`;
-  else if (r.sweep) banner = `<div class="banner pop">CLEAN SWEEP! ${esc(r.sweep === "a" ? m.nameA : m.nameB)} got every vote</div>`;
+  else if (r.sweep) banner = `<div class="banner late">CLEAN SWEEP! ${esc(r.sweep === "a" ? m.nameA : m.nameB)} got every vote</div>`;
   const side = (s) => {
     const name = s === "a" ? m.nameA : m.nameB, text = m[s], pts = r[s], votes = s === "a" ? r.votesA : r.votesB, who = s === "a" ? m.votersA : m.votersB;
     return `<div class="ans ${s} ${!text ? "blank" : ""}">${text ? esc(text) : "(no answer)"}
-      <div class="res"><span class="tag"><span class="inner"><small>Hello, I'm</small>${esc(name)}</span></span><span class="pts">+${pts}</span></div>
-      ${r.jinx || r.bothBlank ? "" : `<div class="res"><span class="votes">${votes} vote${votes===1?"":"s"}${who && who.length ? ": " + who.map(esc).join(", ") : ""}</span></div>`}</div>`;
+      <div class="res ${r.jinx || r.bothBlank ? "" : "late"}"><span class="tag"><span class="inner"><small>Hello, I'm</small>${esc(name)}</span></span><span class="pts">+${pts}</span></div>
+      ${r.jinx || r.bothBlank ? "" : `<div class="res late"><span class="votes">${votes} vote${votes===1?"":"s"}${who && who.length ? ": " + who.map(esc).join(", ") : ""}</span></div>`}</div>`;
   };
   const tv = mode === "tv";
   return `<div class="center"><span class="pill">Matchup ${m.index + 1} of ${m.total}</span></div><div class="gap"></div>
@@ -448,7 +517,7 @@ function finalReveal(){
   const f = S.final;
   return `<div class="center"><span class="pill">Final results</span></div><div class="gap"></div>
     <div class="card"><p class="prompt">${esc(f.prompt)}</p>
-    ${f.answers.map(a => `<div class="ans pop">${esc(a.text)}<div class="res"><span class="tag"><span class="inner"><small>Hello, I'm</small>${esc(a.name)}</span></span><span class="pts">+${a.points}</span></div><div class="res"><span class="votes">${a.votes} vote${a.votes===1?"":"s"}</span></div></div>`).join("") || `<p class="muted">Not enough answers for a vote.</p>`}</div>
+    ${f.answers.map(a => `<div class="ans pop">${esc(a.text)}<div class="res late"><span class="tag"><span class="inner"><small>Hello, I'm</small>${esc(a.name)}</span></span><span class="pts">+${a.points}</span></div><div class="res late"><span class="votes">${a.votes} vote${a.votes===1?"":"s"}</span></div></div>`).join("") || `<p class="muted">Not enough answers for a vote.</p>`}</div>
     ${S.isHost ? `<button class="btn" data-act="advance">Reveal the winner</button>` : ""}`;
 }
 

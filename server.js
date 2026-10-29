@@ -272,6 +272,7 @@ function viewFor(room, pid /* null for display */) {
     settings: room.settings,
     categories: categoryList,
     minPlayers: MIN_PLAYERS,
+    hasDisplay: room.displays.size > 0,
     mult: ROUND_MULT[room.round] || 1,
   };
 
@@ -394,7 +395,7 @@ io.on("connection", (socket) => {
       room = r;
       r.displays.add(socket.id);
       socket.emit("joined", { code, display: true });
-      socket.emit("state", viewFor(r, null));
+      broadcast(r); // everyone learns a TV is connected (it becomes the speaker)
       return;
     }
     // rejoin with existing id
@@ -542,7 +543,7 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     if (!room) return;
-    room.displays.delete(socket.id);
+    if (room.displays.delete(socket.id)) return broadcast(room);
     const p = pid && room.players.get(pid);
     if (p && p.socketId === socket.id) {
       p.connected = false;
